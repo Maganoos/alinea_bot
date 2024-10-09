@@ -165,6 +165,8 @@ async def on_message(message):
                     percentage = 690
                 elif cmd == "howsexy" and input_text.lower() not in ["aartizz", "arti", "<@897329902863384577>"]:
                     percentage = 420
+                elif cmd in ["howstinky", "howpoor", "howshit"] and input_text.lower() == "southside":
+                    percentage = 690
                 else:
                     # Generate a random percentage for all other cases
                     percentage = random.randint(0, 100)
