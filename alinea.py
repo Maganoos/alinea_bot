@@ -6,6 +6,7 @@ import re
 import io
 from dotenv import load_dotenv
 from base64 import b64decode
+import datetime
 
 # Load environment variables
 load_dotenv(dotenv_path="/DATA/Documents/alinea_bot/meow.env")
@@ -95,9 +96,13 @@ async def on_message(message):
     for prefix in COMMAND_PREFIX:
         if message.content.startswith(prefix):
             command_body = message.content[len(prefix):].strip()  # Get the command body
-
+            # AFK Handling
+            if command_body == "afk":
+                await message.channel.send(f"There are currently {len(afk_users)} AFK: {', '.join(sorted(afk_users.keys()))}")
+                return
+            
             # Online Handling
-            if command_body == "online":
+            elif command_body == "online":
                 players, player_count = get_online_players()
                 if players is not None:
                     player_names = format_player_names(players)
@@ -209,6 +214,11 @@ async def on_message(message):
                 result = re.sub(r'[^0-9]', '', input_text)
                 await message.channel.send(f"`{input_text}` is equal to `{result}`")
                 
+            #skibidi afk list
+            elif command_body.startswith("afk"):
+                await message.channel.send(f"There are currently {len(afk_users)} AFK: {', '.join(sorted(afk_users.keys()))}")
+                
+                
     # Check for "incorrect buzzer"
     if "incorrect buzzer" in message.content.lower():
         await message.channel.send(file=discord.File(io.BytesIO(incorrect_sound), filename="incorrect.mp3"))
@@ -226,22 +236,23 @@ async def on_message(message):
     elif any(meow in message.content.lower() for meow in ["uwu", "owo", "qwq"]):
         await message.channel.send("OwO?")
 
-    # Handle AFK users
+    # Check for AFK status (text trigger)
+    if message.content.lower().startswith("afk") and message.author.display_name.lower() not in afk_users:
+        # Mark user as AFK
+        afk_users[message.author.display_name.lower()] = datetime.datetime.now().timestamp()
+        timestamp = int(afk_users[message.author.display_name.lower()])
+        await message.channel.send(f"{message.author.display_name} is now AFK. <t:{timestamp}:R>")
+        return
+
+    # Handle user returning from AFK
     if message.author.display_name.lower() in afk_users:
-        # Remove the user from AFK status since they sent a message
         del afk_users[message.author.display_name.lower()]
         await message.channel.send(f"{message.author.display_name} is no longer AFK.")
 
-    # Mark as AFK if the message starts with "afk"
-    if message.content.lower().startswith("afk"):
-        afk_users[message.author.display_name.lower()] = True
-        await message.channel.send(f"{message.author.display_name} is now AFK.")
-        return
-
-    # Notify if an AFK user's display name is mentioned in the message
-    for display_name in afk_users:
-        if display_name in message.content.lower():  # Check if the display name is in the message
-            await message.channel.send(f"{message.author.display_name}, {display_name} is currently AFK.")
+    # Additional logic for handling AFK users mentioned
+    for display_name, timestamp in afk_users.items():
+        if display_name in message.content.lower() and message.author.display_name != "Karl":
+            await message.channel.send(f"{message.author.display_name}, {display_name} is currently AFK since <t:{int(timestamp)}:R>.")
             return
 
 client.run(TOKEN)
