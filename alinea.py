@@ -10,6 +10,7 @@ from thingies import messages, how_commands, safe_eval, get_online_players, form
 
 # Load environment variables
 load_dotenv(dotenv_path="/DATA/Documents/alinea_bot/meow.env")
+load_dotenv(dotenv_path="meow.env")
 encoded_token = os.getenv("DISCORD_BOT_TOKEN")
 
 if encoded_token:
@@ -42,19 +43,22 @@ async def on_message(message):
     # Check if the message is in the correct channel
     if message.channel.id != CHANNEL_ID:
         return
-    
-    if message.author.id == "897329902863384577" or message.author.display_name.lower() in ["aartizz", "notaartizz"]:
-        await message.channel.send("nuh uh", reference=message)
-        return
 
     # Command handling
     for prefix in COMMAND_PREFIX:
         if message.content.startswith(prefix):
             command_body = message.content[len(prefix):].strip()  # Get the command body
 
+            if message.author.id == 897329902863384577 or message.author.display_name.lower() in ["aartizz", "notaartizz"]:
+                await message.channel.send("nuh uh", reference=message)
+                return
+            
             # AFK Handling
             if command_body == "afk":
-                await message.channel.send(f"There are currently {len(afk_users)} AFK: {', '.join(sorted(afk_users))}", reference=message)
+                if afk_users:
+                    await message.channel.send(f"There are currently {len(afk_users)} AFK: {', '.join(sorted(afk_users))}", reference=message)
+                else:
+                    await message.channel.send(f"No one's AFK rn :3")
                 return
             
             # Online Handling
@@ -180,9 +184,14 @@ async def on_message(message):
         else:
             await message.channel.send("🔫💨", reference=message)
     
+    elif "southside" in message.content:
+        await message.channel.send("*shivers*")
+    
     # AFK Handling
     if message.author.display_name.lower() not in afk_users and message.content.lower().startswith("afk"):
-        # Mark user as AFK
+        if message.author.id == 897329902863384577 or message.author.display_name.lower() in ["aartizz", "notaartizz"]:
+            await message.channel.send("nuh uh", reference=message)
+            return
         afk_users.append(message.author.display_name)
         await message.channel.send("bet :3", reference=message)
         return

@@ -18,7 +18,7 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-xcopy "%FILEPATH%\iceland_facts.py" "%DESTINATION%" /Y /I
+xcopy "%FILEPATH%\thingies.py" "%DESTINATION%" /Y /I
 if %ERRORLEVEL% neq 0 (
     echo Failed to copy iceland_facts.py to the SMB share. Exiting...
     exit /b 1
