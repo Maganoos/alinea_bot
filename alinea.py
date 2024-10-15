@@ -178,11 +178,13 @@ async def on_message(message):
             await message.channel.send("🧠🔨", reference=message.reference)
         else:
             await message.channel.send("🧠🔨", reference=message)
+        return
     elif message.content.lower().startswith("meow, kill this guy"):
         if message.reference is not None:
             await message.channel.send("🔫💨", reference=message.reference)
         else:
             await message.channel.send("🔫💨", reference=message)
+        return
     
     elif "southside" in message.content:
         await message.channel.send("*shivers*")
