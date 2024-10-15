@@ -55,10 +55,10 @@ async def on_message(message):
             
             # AFK Handling
             if command_body == "afk":
-                if afk_users:
-                    await message.channel.send(f"There are currently {len(afk_users)} AFK: {', '.join(sorted(afk_users))}", reference=message)
-                else:
+                if len(afk_users) == 0:
                     await message.channel.send(f"No one's AFK rn :3")
+                else:
+                    await message.channel.send(f"There are currently {len(afk_users)} AFK: {', '.join(sorted(afk_users))}", reference=message)    
                 return
             
             # Online Handling
