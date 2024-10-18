@@ -172,7 +172,8 @@ async def on_message(message):
                     await message.channel.send("No.", reference=message)
 
     if message.content.lower().startswith("meow, give me a fact"):
-        await message.channel.send(random.choice(messages), reference=message)    
+        await message.channel.send(random.choice(messages), reference=message)  
+        return  
     elif message.content.lower().startswith("meow, lobotomize"):
         if message.reference is not None:
             await message.channel.send("🧠🔨", reference=message.reference)
@@ -199,7 +200,7 @@ async def on_message(message):
         return
 
     # Handle user returning from AFK
-    if message.author.display_name.lower() in afk_users:
+    if message.author.display_name in afk_users:
         if not any(skibidi in message.content.lower() for skibidi in ["wb", "welcome back"]):
             afk_users.remove(message.author.display_name)
             await message.channel.send(f"{message.author.display_name}, wb :3", reference=message)
