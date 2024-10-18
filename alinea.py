@@ -36,6 +36,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    global afk_users
     # Ignore messages from the bot itself
     if message.author == client.user:
         return
@@ -170,7 +171,26 @@ async def on_message(message):
                     await message.channel.send("Yes.", reference=message)
                 else:
                     await message.channel.send("No.", reference=message)
-
+                    
+            if command_body.startswith("addafk"):
+                if (message.author.display_name in ["Maganoos", "SoldierofRawr"] and message.author.id == 1050780466137026671) or message.author.id == 1291468690088263811:
+                    parts = command_body.split(" ", 1)
+                    input_text = parts[1].strip() if len(parts) > 1 else ""
+                    if input_text == "":
+                        await message.channel.send("No user provided")
+                    else:
+                        afk_users.append(input_text)
+                        await message.channel.send(f"Added {input_text} to AFK list")
+            if command_body.startswith("remafk"):
+                if (message.author.display_name in ["Maganoos", "SoldierofRawr"] and message.author.id == 1050780466137026671) or message.author.id == 1291468690088263811:
+                    parts = command_body.split(" ", 1)
+                    input_text = parts[1].strip() if len(parts) > 1 else ""
+                    if input_text == "":
+                        await message.channel.send("No user provided")
+                    else:
+                        afk_users.remove(input_text)
+                        await message.channel.send(f"Removed {input_text} from AFK list")
+    
     if message.content.lower().startswith("meow, give me a fact"):
         await message.channel.send(random.choice(messages), reference=message)  
         return  
@@ -190,28 +210,31 @@ async def on_message(message):
     elif "southside" in message.content:
         await message.channel.send("*shivers*")
     
+    # Handle user returning from AFK
+    if any(message.author.display_name.lower() == name.lower() for name in afk_users):
+        if not any(phrase in message.content.lower() for phrase in ["wb", "welcome back"]):
+            afk_users = [name for name in afk_users if name.lower() != message.author.display_name.lower()]
+            await message.channel.send(f"{message.author.display_name}, wb :3", reference=message)
+            return
+
+    # Handle "left the game" message for AFK removal
+    if message.author.id == 728771876356096013 and "left the game" in message.content.lower():
+        left_user = message.content.lower().split(' left the game')[0].strip()  # Extract name
+        for name in afk_users[:]:  # Iterate over a copy of the list
+            if name.lower() == left_user:
+                afk_users.remove(name)  # Remove in original case
+                await message.channel.send(f"{name} removed from AFK", reference=message)
+                return
+
     # AFK Handling
-    if message.author.display_name.lower() not in afk_users and message.content.lower().startswith("afk"):
+    if not any(message.author.display_name.lower() == name.lower() for name in afk_users) and message.content.lower().startswith("afk"):
         if message.author.id == 897329902863384577 or message.author.display_name.lower() in ["aartizz", "notaartizz"]:
             await message.channel.send("nuh uh", reference=message)
             return
-        afk_users.append(message.author.display_name)
+        afk_users.append(message.author.display_name)  # Store in original case
         await message.channel.send("bet :3", reference=message)
         return
 
-    # Handle user returning from AFK
-    if message.author.display_name in afk_users:
-        if not any(skibidi in message.content.lower() for skibidi in ["wb", "welcome back"]):
-            afk_users.remove(message.author.display_name)
-            await message.channel.send(f"{message.author.display_name}, wb :3", reference=message)
-            return
-    if message.author.id == 728771876356096013 and "left the game" in message.content.lower():
-        for name in afk_users[:]:
-            if name.lower() == message.content.lower().split(' left the game')[0].strip():
-                afk_users.remove(name)
-                await message.channel.send(f"{name} removed from AFK", reference=message)
-                return
-                
     # Check for "incorrect buzzer"
     elif "incorrect buzzer" in message.content.lower():
         await message.channel.send(file=discord.File(io.BytesIO(incorrect_sound), filename="incorrect.mp3"), reference=message)
